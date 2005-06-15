@@ -2,7 +2,7 @@
 #@+node:jpenner.20050305105206:@thin TennisForTwo.py
 #@@language python
 
-import pygame, math, cPickle, sys, StringIO, socket, re, urllib
+import pygame, math, cPickle, sys, StringIO, socket, re, urllib, random
 from pygame.locals import *
 from twisted.internet import task, reactor, protocol, udp
 from widgets import *
@@ -25,6 +25,7 @@ SINGLE_PLAYER = 10
 #globals
 class Game:
     currentplayer = 1
+    AIPlayer = 0
     SeverPort = 7554
     Port = None
 #@nonl
@@ -49,6 +50,8 @@ def makeAngle(pos):
 def anglePos(rect, angle, radius):
     return( (rect.centerx + (math.cos(angle) * radius)), (rect.centery + (math.sin(angle) * radius)))
 
+def velocityFromAngle(angle):
+    return (math.cos(angle) * 12, math.sin(angle) * 9)
 #@-node:jpenner.20050427175747:Angles
 #@+node:jpenner.20050605110605:IP address
 def getMyIP():
@@ -123,7 +126,7 @@ class Event:
         self.fromplayer = Game.myplayer
         
 class ClickEvent (Event):
-    def __init__(self, xvel, yvel, player):
+    def __init__(self, (xvel, yvel), player):
         Event.__init__(self, EV_CLICK)
         self.xvel = xvel
         self.yvel = yvel
@@ -283,9 +286,11 @@ class MainMenu(BaseMenu):
         #@nl
         
     def startSingle(self):
-        Game.myplayer = SINGLE_PLAYER
+#        Game.myplayer = SINGLE_PLAYER
+        Game.myplayer = 1
         Game.isClient = False
-        Game.rules.infinitehits = True
+#        Game.rules.infinitehits = True
+        Game.AIPlayer = 2
         Game.gameMgr.changeState(Game.gameMgr.STATE_SINGLE_PLAYER)
 
     def startServer(self):
@@ -611,6 +616,14 @@ class NetworkPhysicsEngine:
 #@-others
 #@nonl
 #@-node:jpenner.20050320112219:Physics
+#@+node:jpenner.20050615085910:AI
+class AIPlayer:
+    def tick(self):
+        if random.randint(0,13) == 1:
+            angle = math.radians(random.randint(180 + 10, 270 - 10))
+            Game.evMgr.postEvent( ClickEvent(velocityFromAngle(angle), Game.AIPlayer) )
+        
+#@-node:jpenner.20050615085910:AI
 #@+node:jpenner.20050307180329:Sound
 class SoundEngine:
     def __init__(self):
@@ -670,7 +683,8 @@ class InputManager:
     def sdl_event(self, event):        
         if event.type == MOUSEBUTTONUP:
             angle = makeAngle(event.pos)
-            Game.evMgr.postEvent( ClickEvent(math.cos(angle) * 12, math.sin(angle) * 9, Game.myplayer) )
+            log("userangle: " + str(math.degrees(angle)))
+            Game.evMgr.postEvent( ClickEvent(velocityFromAngle(angle), Game.myplayer) )
             
         if event.type == KEYUP:
             Game.evMgr.postEvent( ServeEvent() )
@@ -748,7 +762,7 @@ class GameMgr (StateMachine):
         StateMachine.__init__(self,
             [GameState(MainMenu(), mainMenu.onEnter),
              GameState(GameLoop([inputMgr, Game.evMgr, self.physicsMgr, self.graphicsMgr]), self.gameEnter),
-             GameState(GameLoop([inputMgr, Game.evMgr, PhysicsEngine(), self.graphicsMgr]), self.gameEnter),
+             GameState(GameLoop([inputMgr, AIPlayer(), Game.evMgr, PhysicsEngine(), self.graphicsMgr]), self.gameEnter),
              GameState(GameLoop([Game.evMgr, self.serverWait]), self.serverEnter, self.networkExit),
              GameState(GameLoop([Game.evMgr, self.clientWait]), self.clientEnter, self.networkExit)
             ])
@@ -782,6 +796,7 @@ class GameMgr (StateMachine):
 #@-node:jpenner.20050305122430:Game Loop
 #@+node:jpenner.20050319125841:Setup
 def main():
+    random.seed()
     pygame.init()
 
     startLogging('tennis.log')

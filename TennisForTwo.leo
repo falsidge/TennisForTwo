@@ -10,7 +10,7 @@
 <vnodes>
 <v t="jpenner.20050319120705" a="E"><vh>Files</vh>
 <v t="jpenner.20050305105206" a="E"
-expanded="jpenner.20050601180947,jpenner.20050305124252,jpenner.20050319143816,jpenner.20050604112932,jpenner.20050605102056,jpenner.20050305121157,jpenner.20050306103246,jpenner.20050305122430,"><vh>@thin TennisForTwo.py</vh></v>
+expanded="jpenner.20050601180947,jpenner.20050305124252,jpenner.20050319143816,jpenner.20050604112932,jpenner.20050605102056,jpenner.20050305121157,jpenner.20050604175241,jpenner.20050305120654,jpenner.20050320112219,jpenner.20050306103246,jpenner.20050305122430,"><vh>@thin TennisForTwo.py</vh></v>
 <v t="jpenner.20050604112932.1"
 expanded="jpenner.20050604112932.6,jpenner.20050604112932.16,jpenner.20050604112932.30,jpenner.20050604112932.41,"><vh>@thin widgets.py</vh></v>
 <v t="jpenner.20050604113053"
@@ -26,7 +26,7 @@ expanded="jpenner.20050604113053.2,"><vh>@thin widgetsdemo.py</vh></v>
 </v>
 <v t="jpenner.20050319120705.1" a="E"><vh>Utilities</vh>
 <v t="jpenner.20050305121227" a="E"><vh>@run TennisForTwo.py</vh></v>
-<v t="jpenner.20050320113047"><vh>@run TennisForTwo.py client localhost 7554</vh></v>
+<v t="jpenner.20050320113047" a="E"><vh>@run TennisForTwo.py client localhost 7554</vh></v>
 <v t="jpenner.20050604113053.7" a="E"><vh>@run widgetsdemo.py</vh></v>
 <v t="jpenner.20050307190605"><vh>@run PyGame2Exe.py py2exe</vh></v>
 <v t="jpenner.20050604144534.1"><vh>@run python2.4 pygame2app.py py2app</vh></v>
