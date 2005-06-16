@@ -28,6 +28,8 @@ class Game:
     AIPlayer = 0
     SeverPort = 7554
     Port = None
+    
+    logfile = None
 #@nonl
 #@-node:jpenner.20050310195953:Globals
 #@+node:jpenner.20050424164431:Logging
@@ -35,7 +37,8 @@ def startLogging(fn):
     Game.logfile = open(fn, 'wt')
     
 def log(text):
-    Game.logfile.write(str(text) + '\n')
+    if Game.logfile <> None:
+        Game.logfile.write(str(text) + '\n')
 
 def stopLogging():
     Game.logfile.close()
@@ -58,13 +61,16 @@ def getMyIP():
     try:
         f = urllib.urlopen('http://checkip.dyndns.org')
         s = f.read()
-        m = re.search('([\d]*\.[\d]*\.[\d]*\.[\d]*)', s)
+        log("checkip: " + s)
+        m = re.search('Current IP Address: ([\d]*\.[\d]*\.[\d]*\.[\d]*)', s)
         outsideip = m.group(0)
+        log("outside ip: " + outsideip)
     except:
         outsideip = None
 
     try:
         insideip = socket.gethostbyname(socket.gethostname())
+        log("inside ip: " + insideip)
     except:
         insideip = None
 
@@ -72,7 +78,7 @@ def getMyIP():
         ip = "Unknown"
     else:
         if (outsideip == None):
-             ip = insideip + " (No internet?)"
+             ip = insideip + " (Firewalled / Proxied?)"
         else:
              ip = outsideip
              if (insideip <> None) and (insideip <> outsideip):
@@ -268,12 +274,13 @@ class MainMenu(BaseMenu):
         self.addwidget(TextClass(self, (120, 40, 400, 30), "Tennis For Two", 36))
         
         self.addwidget(ButtonClass(self, self.startSingle, (120, 120, 400, 30), "Start Single-Player Game"))
+        self.addwidget(ButtonClass(self, self.startAI, (120, 155, 400, 30), "Start Game Vs. Tennis-O-Tron"))
         
-        self.addwidget(TextClass(self, (120, 190, 400, 20), "Your IP Address: " + getMyIP()))
-        self.addwidget(TextClass(self, (120, 215, 60, 20), "Port:"))
-        self.serverPort = EditClass(self, None, (180, 215, 60, 20), "7554")
+        self.addwidget(TextClass(self, (120, 220, 450, 20), "Your IP Address: " + getMyIP()))
+        self.addwidget(TextClass(self, (120, 245, 60, 20), "Port:"))
+        self.serverPort = EditClass(self, None, (180, 245, 60, 20), "7554")
         self.addwidget(self.serverPort)
-        self.addwidget(ButtonClass(self, self.startServer, (120, 240, 400, 30), "Start Server"))
+        self.addwidget(ButtonClass(self, self.startServer, (120, 270, 400, 30), "Start Server"))
         
         self.addwidget(TextClass(self, (120, 310, 160, 20), "Server Address:"))
         self.clientAddr = EditClass(self, None, (280, 310, 240, 20))
@@ -286,13 +293,17 @@ class MainMenu(BaseMenu):
         #@nl
         
     def startSingle(self):
-#        Game.myplayer = SINGLE_PLAYER
-        Game.myplayer = 1
+        Game.myplayer = SINGLE_PLAYER
         Game.isClient = False
-#        Game.rules.infinitehits = True
-        Game.AIPlayer = 2
+        Game.rules.infinitehits = True
         Game.gameMgr.changeState(Game.gameMgr.STATE_SINGLE_PLAYER)
 
+    def startAI(self):
+        Game.myplayer = 1
+        Game.isClient = False
+        Game.AIPlayer = 2
+        Game.gameMgr.changeState(Game.gameMgr.STATE_SINGLE_PLAYER)
+        
     def startServer(self):
         Game.myplayer = 1
         Game.isClient = False
@@ -352,6 +363,21 @@ class ClientWait(BaseMenu):
             Game.network.sendEvent(ConnectEvent())
 
 #@-node:jpenner.20050605180040:Client Wait Screen
+#@+node:jpenner.20050616085506:Failure Screen
+class FailScreen(BaseMenu):
+    def menuLayout(self):
+        self.errText = MultiLineTextClass(self, (120, 60, 400, 270), "", 24)
+        self.addwidget(self.errText)
+        self.addwidget(ButtonClass(self, self.ok, (120, 360, 400, 30), "OK"))
+
+    def ok(self):
+        Game.gameMgr.changeState(Game.gameMgr.STATE_MENU)
+    
+    def onEnter(self):
+        BaseMenu.onEnter(self)
+        self.errText.settext(Game.failure)
+#@nonl
+#@-node:jpenner.20050616085506:Failure Screen
 #@-others
 #@-node:jpenner.20050604112932:Menu
 #@+node:jpenner.20050305121157:Game
@@ -683,7 +709,6 @@ class InputManager:
     def sdl_event(self, event):        
         if event.type == MOUSEBUTTONUP:
             angle = makeAngle(event.pos)
-            log("userangle: " + str(math.degrees(angle)))
             Game.evMgr.postEvent( ClickEvent(velocityFromAngle(angle), Game.myplayer) )
             
         if event.type == KEYUP:
@@ -750,21 +775,24 @@ class GameMgr (StateMachine):
         self.STATE_SINGLE_PLAYER = 2
         self.STATE_WAIT_FOR_CLIENT = 3
         self.STATE_CONNECT = 4
-        
+        self.STATE_FAILURE = 5
+                
         inputMgr = InputManager()
         self.graphicsMgr = TFTGraphicsMgr()
         self.physicsMgr = PhysicsMgr()
 
         mainMenu = MainMenu()
+        failScreen = FailScreen()
         self.serverWait = ServerWait()
         self.clientWait = ClientWait()
         
         StateMachine.__init__(self,
-            [GameState(MainMenu(), mainMenu.onEnter),
+            [GameState(mainMenu, mainMenu.onEnter),
              GameState(GameLoop([inputMgr, Game.evMgr, self.physicsMgr, self.graphicsMgr]), self.gameEnter),
              GameState(GameLoop([inputMgr, AIPlayer(), Game.evMgr, PhysicsEngine(), self.graphicsMgr]), self.gameEnter),
              GameState(GameLoop([Game.evMgr, self.serverWait]), self.serverEnter, self.networkExit),
-             GameState(GameLoop([Game.evMgr, self.clientWait]), self.clientEnter, self.networkExit)
+             GameState(GameLoop([Game.evMgr, self.clientWait]), self.clientEnter, self.networkExit),
+             GameState(failScreen, failScreen.onEnter, self.networkExit)
             ])
 
     def gameEnter(self):
@@ -772,23 +800,31 @@ class GameMgr (StateMachine):
         self.physicsMgr.onEnter()
 
     def clientEnter(self):
+        self.clientWait.onEnter()
+
         Game.network = TFTProtocol()
         def onResolve(ip):
             Game.network.address = (ip, Game.ServerPort)
             Game.port = reactor.listenUDP(0, Game.network)
-        reactor.resolve(Game.ServerIP).addCallback(onResolve)
-        self.clientWait.onEnter()
+        def onFail(err):
+            Game.failure = err.getErrorMessage()
+            self.changeState(self.STATE_FAILURE)
+        reactor.resolve(Game.ServerIP).addCallback(onResolve).addErrback(onFail)
 
     def serverEnter(self):
+        self.serverWait.onEnter()        
+
         Game.network = TFTProtocol()
-        Game.port = reactor.listenUDP(Game.ServerPort, Game.network)
-        log ("Listening on " + str(Game.ServerPort))
-        self.serverWait.onEnter()
+        try:
+            Game.port = reactor.listenUDP(Game.ServerPort, Game.network)
+            log ("Listening on " + str(Game.ServerPort))
+        except:
+            Game.failure = "Unable to listen on UDP port " + str(Game.ServerPort) + ".  Make sure nothing else is using that port, and you have the proper permissions to create a server on it."
+            self.changeState(self.STATE_FAILURE)
 
     def networkExit(self):
-        if (self.newstate == self.STATE_MENU) and (Game.port <> None):  # cancelled
+        if ((self.newstate == self.STATE_MENU) or (self.newstate == self.STATE_FAILURE)) and (Game.port <> None):  # cancelled
             Game.port.stopListening()
-
 #@-node:jpenner.20050606072251.1:Game Manager
 #@-others
 
@@ -799,7 +835,7 @@ def main():
     random.seed()
     pygame.init()
 
-    startLogging('tennis.log')
+#    startLogging('tennis.log')
 
     Game.screen = pygame.display.set_mode(SCREENRECT.size, DOUBLEBUF, 16)
 
@@ -813,7 +849,7 @@ def main():
     reactor.run()
     
     #cleanup
-    stopLogging()
+#    stopLogging()
 
 
 

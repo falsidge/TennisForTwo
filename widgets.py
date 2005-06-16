@@ -1006,6 +1006,8 @@ class MultiLineTextClass:
     #@+node:jpenner.20050604112932.50:settext
     def settext( self, newtext ):
     	"""Replace the text of the widget"""
+    
+        self.lines = [] # clear current text
     	# expand tabs
     	newtext = newtext.expandtabs()
     	# append each line separately

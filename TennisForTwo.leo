@@ -10,12 +10,12 @@
 <vnodes>
 <v t="jpenner.20050319120705" a="E"><vh>Files</vh>
 <v t="jpenner.20050305105206" a="E"
-expanded="jpenner.20050601180947,jpenner.20050305124252,jpenner.20050319143816,jpenner.20050604112932,jpenner.20050605102056,jpenner.20050305121157,jpenner.20050604175241,jpenner.20050305120654,jpenner.20050320112219,jpenner.20050306103246,jpenner.20050305122430,"><vh>@thin TennisForTwo.py</vh></v>
+expanded="jpenner.20050601180947,jpenner.20050305124252,jpenner.20050319143816,jpenner.20050604112932,jpenner.20050305121157,jpenner.20050305120654,jpenner.20050320112219,jpenner.20050306103246,jpenner.20050305122430,"><vh>@thin TennisForTwo.py</vh></v>
 <v t="jpenner.20050604112932.1"
-expanded="jpenner.20050604112932.6,jpenner.20050604112932.16,jpenner.20050604112932.30,jpenner.20050604112932.41,"><vh>@thin widgets.py</vh></v>
+expanded="jpenner.20050604112932.41,jpenner.20050604112932.47,"><vh>@thin widgets.py</vh></v>
 <v t="jpenner.20050604113053"
 expanded="jpenner.20050604113053.2,"><vh>@thin widgetsdemo.py</vh></v>
-<v t="jpenner.20050319120621"><vh>@thin pygame2exe.py</vh></v>
+<v t="jpenner.20050319120621" a="ETV"><vh>@thin pygame2exe.py</vh></v>
 <v t="jpenner.20050604144534"><vh>@thin pygame2app.py</vh></v>
 </v>
 <v t="jpenner.20050605105545"><vh>Tasks</vh>
@@ -26,8 +26,6 @@ expanded="jpenner.20050604113053.2,"><vh>@thin widgetsdemo.py</vh></v>
 </v>
 <v t="jpenner.20050319120705.1" a="E"><vh>Utilities</vh>
 <v t="jpenner.20050305121227" a="E"><vh>@run TennisForTwo.py</vh></v>
-<v t="jpenner.20050320113047" a="E"><vh>@run TennisForTwo.py client localhost 7554</vh></v>
-<v t="jpenner.20050604113053.7" a="E"><vh>@run widgetsdemo.py</vh></v>
 <v t="jpenner.20050307190605"><vh>@run PyGame2Exe.py py2exe</vh></v>
 <v t="jpenner.20050604144534.1"><vh>@run python2.4 pygame2app.py py2app</vh></v>
 </v>
@@ -35,52 +33,8 @@ expanded="jpenner.20050604113053.2,"><vh>@thin widgetsdemo.py</vh></v>
 <tnodes>
 <t tx="jpenner.20050305121227"></t>
 <t tx="jpenner.20050307190605"></t>
-<t tx="jpenner.20050319120621">@ignore
-@language python
-#make standalone, needs at least pygame-1.5.3 and py2exe-0.3.1
-
-from distutils.core import setup
-import sys, os, pygame, shutil, glob
-import py2exe        
-
-#setup the project variables here.
-#i can't claim these will cover all the cases
-#you need, but they seem to work for all my
-#projects, just change as neeeded.
-
-
-script = "TennisForTwo.py"	#name of starting .PY
-icon_file = ""	    	    	#ICO file for the .EXE (not working well)
-optimize = 2 	    	    	#0, 1, or 2; like -O and -OO
-dos_console = 0     	    	#set to 0 for no dos shell when run
-extra_data = ['data'] #extra files/dirs copied to game
-extra_modules = ['pygame.locals']   #extra python modules not auto found
-
-
-
-
-
-
-#use the default pygame icon, if none given
-if not icon_file:
-    path = os.path.split(pygame.__file__)[0]
-    icon_file = '"' + os.path.join(path, 'pygame.ico') + '"'
-#unfortunately, this cool icon stuff doesn't work in current py2exe :(
-#icon_file = ''
-
-project_name = os.path.splitext(os.path.split(script)[1])[0]
-
-
-#this will create the executable and all dependencies
-setup(#name=project_name,
-      windows=[script],
-      data_files=[("data", glob.glob("data\\*"))]
-     )
-
-</t>
 <t tx="jpenner.20050319120705"></t>
 <t tx="jpenner.20050319120705.1"></t>
-<t tx="jpenner.20050320113047"></t>
 <t tx="jpenner.20050604113053.3">def __init__( self ):
 	"""Initialize Demo Class"""
 	# instead of pygame.init(), initialize modules manually to 
@@ -130,17 +84,17 @@ setup(#name=project_name,
 	self.animline.width = 5
 	self.animline.left = self.animrect.left
 </t>
-<t tx="jpenner.20050604113053.7"></t>
 <t tx="jpenner.20050604144534.1"></t>
 <t tx="jpenner.20050605102056.1">self.addwidget(TextClass(self, (120, 40, 400, 30), "Tennis For Two", 36))
 
 self.addwidget(ButtonClass(self, self.startSingle, (120, 120, 400, 30), "Start Single-Player Game"))
+self.addwidget(ButtonClass(self, self.startAI, (120, 155, 400, 30), "Start Game Vs. Tennis-O-Tron"))
 
-self.addwidget(TextClass(self, (120, 190, 400, 20), "Your IP Address: " + getMyIP()))
-self.addwidget(TextClass(self, (120, 215, 60, 20), "Port:"))
-self.serverPort = EditClass(self, None, (180, 215, 60, 20), "7554")
+self.addwidget(TextClass(self, (120, 220, 450, 20), "Your IP Address: " + getMyIP()))
+self.addwidget(TextClass(self, (120, 245, 60, 20), "Port:"))
+self.serverPort = EditClass(self, None, (180, 245, 60, 20), "7554")
 self.addwidget(self.serverPort)
-self.addwidget(ButtonClass(self, self.startServer, (120, 240, 400, 30), "Start Server"))
+self.addwidget(ButtonClass(self, self.startServer, (120, 270, 400, 30), "Start Server"))
 
 self.addwidget(TextClass(self, (120, 310, 160, 20), "Server Address:"))
 self.clientAddr = EditClass(self, None, (280, 310, 240, 20))
