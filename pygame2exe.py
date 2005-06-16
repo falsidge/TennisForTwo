@@ -14,7 +14,7 @@ import py2exe
 
 
 script = "TennisForTwo.py"	#name of starting .PY
-icon_file = ""	    	    	#ICO file for the .EXE (not working well)
+icon_file = "tennis.ico"	    	    	#ICO file for the .EXE (not working well)
 optimize = 2 	    	    	#0, 1, or 2; like -O and -OO
 dos_console = 0     	    	#set to 0 for no dos shell when run
 extra_data = ['data'] #extra files/dirs copied to game
@@ -31,8 +31,8 @@ project_name = os.path.splitext(os.path.split(script)[1])[0]
 
 #this will create the executable and all dependencies
 setup(#name=project_name,
-      windows=[script],
-      data_files=[("data", glob.glob("data\\*.wav")),(".", ["C:\\python24\\lib\\site-packages\\pygame\\freesansbold.ttf"])]
+      windows=[{"script": script, "icon_resources": [(1, icon_file)]}],
+      data_files=[("data", glob.glob("data\\*.wav")),(".", ["C:\\python24\\lib\\site-packages\\pygame\\freesansbold.ttf", "tennis.bmp"])]
      )
 
 

@@ -837,6 +837,9 @@ def main():
 
 #    startLogging('tennis.log')
 
+    pygame.display.set_caption('Tennis For Two')
+    pygame.display.set_icon(pygame.image.load('tennis.bmp'))
+    
     Game.screen = pygame.display.set_mode(SCREENRECT.size, DOUBLEBUF, 16)
 
     Game.evMgr = EventManager()    
@@ -850,6 +853,7 @@ def main():
     
     #cleanup
 #    stopLogging()
+
 
 
 
