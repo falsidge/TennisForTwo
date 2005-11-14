@@ -2,7 +2,7 @@
 <leo_file>
 <leo_header file_format="2" tnodes="0" max_tnode_index="0" clone_windows="0"/>
 <globals body_outline_ratio="0.603318250377">
-	<global_window_position top="25" left="10" height="734" width="1280"/>
+	<global_window_position top="25" left="10" height="734" width="1270"/>
 	<global_log_window_position top="0" left="0" height="0" width="0"/>
 </globals>
 <preferences/>
@@ -15,7 +15,7 @@ expanded="jpenner.20050601180947,jpenner.20050305124252,jpenner.20050319143816,j
 expanded="jpenner.20050604112932.41,jpenner.20050604112932.47,"><vh>@thin widgets.py</vh></v>
 <v t="jpenner.20050604113053"
 expanded="jpenner.20050604113053.2,"><vh>@thin widgetsdemo.py</vh></v>
-<v t="jpenner.20050319120621" a="ETV"><vh>@thin pygame2exe.py</vh></v>
+<v t="jpenner.20050319120621" a="E"><vh>@thin pygame2exe.py</vh></v>
 <v t="jpenner.20050604144534"><vh>@thin pygame2app.py</vh></v>
 </v>
 <v t="jpenner.20050605105545"><vh>Tasks</vh>

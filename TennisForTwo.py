@@ -27,7 +27,7 @@ class Game:
     currentplayer = 1
     AIPlayer = 0
     SeverPort = 7554
-    Port = None
+    port = None
     
     logfile = None
 #@nonl
@@ -792,7 +792,7 @@ class GameMgr (StateMachine):
              GameState(GameLoop([inputMgr, AIPlayer(), Game.evMgr, PhysicsEngine(), self.graphicsMgr]), self.gameEnter),
              GameState(GameLoop([Game.evMgr, self.serverWait]), self.serverEnter, self.networkExit),
              GameState(GameLoop([Game.evMgr, self.clientWait]), self.clientEnter, self.networkExit),
-             GameState(failScreen, failScreen.onEnter, self.networkExit)
+             GameState(failScreen, failScreen.onEnter)
             ])
 
     def gameEnter(self):
@@ -803,12 +803,14 @@ class GameMgr (StateMachine):
         self.clientWait.onEnter()
 
         Game.network = TFTProtocol()
-        def onResolve(ip):
-            Game.network.address = (ip, Game.ServerPort)
-            Game.port = reactor.listenUDP(0, Game.network)
-        def onFail(err):
-            Game.failure = err.getErrorMessage()
-            self.changeState(self.STATE_FAILURE)
+        def onResolve(ip, self=self):
+            if self.state == self.STATE_CONNECT:
+                Game.network.address = (ip, Game.ServerPort)
+                Game.port = reactor.listenUDP(0, Game.network)
+        def onFail(err, self=self):
+            if self.state == self.STATE_CONNECT:
+                Game.failure = err.getErrorMessage()
+                self.changeState(self.STATE_FAILURE)
         reactor.resolve(Game.ServerIP).addCallback(onResolve).addErrback(onFail)
 
     def serverEnter(self):
