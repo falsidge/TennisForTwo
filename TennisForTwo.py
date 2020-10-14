@@ -2,7 +2,7 @@
 #@+node:jpenner.20050305105206:@thin TennisForTwo.py
 #@@language python
 
-import pygame, math, cPickle, sys, StringIO, socket, re, urllib, random
+import pygame, math, pickle, sys, io, socket, re, urllib.request, urllib.parse, urllib.error, random
 from pygame.locals import *
 from twisted.internet import task, reactor, protocol, udp
 from widgets import *
@@ -37,7 +37,7 @@ def startLogging(fn):
     Game.logfile = open(fn, 'wt')
     
 def log(text):
-    if Game.logfile <> None:
+    if Game.logfile != None:
         Game.logfile.write(str(text) + '\n')
 
 def stopLogging():
@@ -51,7 +51,7 @@ def makeAngle(pos):
     return math.atan2(ydist, xdist)
                
 def anglePos(rect, angle, radius):
-    return( (rect.centerx + (math.cos(angle) * radius)), (rect.centery + (math.sin(angle) * radius)))
+    return( int(rect.centerx + (math.cos(angle) * radius)), int(rect.centery + (math.sin(angle) * radius)))
 
 def velocityFromAngle(angle):
     return (math.cos(angle) * 12, math.sin(angle) * 9)
@@ -59,7 +59,7 @@ def velocityFromAngle(angle):
 #@+node:jpenner.20050605110605:IP address
 def getMyIP():
     try:
-        f = urllib.urlopen('http://checkip.dyndns.org')
+        f = urllib.request.urlopen('http://checkip.dyndns.org')
         s = f.read()
         log("checkip: " + s)
         m = re.search('Current IP Address: ([\d]*\.[\d]*\.[\d]*\.[\d]*)', s)
@@ -81,7 +81,7 @@ def getMyIP():
              ip = insideip + " (Firewalled / Proxied?)"
         else:
              ip = outsideip
-             if (insideip <> None) and (insideip <> outsideip):
+             if (insideip != None) and (insideip != outsideip):
                  ip = ip + " (Firewalled?)"
     return ip
 #@-node:jpenner.20050605110605:IP address
@@ -132,7 +132,8 @@ class Event:
         self.fromplayer = Game.myplayer
         
 class ClickEvent (Event):
-    def __init__(self, (xvel, yvel), player):
+    def __init__(self, xxx_todo_changeme, player):
+        (xvel, yvel) = xxx_todo_changeme
         Event.__init__(self, EV_CLICK)
         self.xvel = xvel
         self.yvel = yvel
@@ -158,9 +159,10 @@ class PlayerUpdateEvent (Event):
         Event.__init__(self, EV_PLAYER_UPDATE)
                 
 class ServeEvent (Event):
-    def __init__(self):
+    def __init__(self, key):
         Event.__init__(self, EV_SERVE)
-        
+        self.key = key
+
 class BallPosEvent (Event):
     def __init__(self, x, y):
         Event.__init__(self, EV_BALLPOS)
@@ -212,27 +214,27 @@ class TFTProtocol (protocol.DatagramProtocol):
         Game.evMgr.registerHandler(EV_CONNECT, self.connectTransport)
 
     def startProtocol(self):
-        if self.address <> None:
+        if self.address != None:
             log (self.address)
 
     def datagramReceived(self, data, address):
         if self.address == None:
             self.address = address
             log(address)
-        msg = cPickle.Unpickler(StringIO.StringIO(data)).load()
+        msg = pickle.Unpickler(io.BytesIO(data)).load()
         
         if (msg.sequence > self.hissequence):
             self.hissequence = msg.sequence
-            if msg.event <> None:
+            if msg.event != None:
                 log ("get " + str(msg.event.type) + ": " + str(msg.event.fromplayer))
                 Game.evMgr.postEvent(msg.event)
         
     def sendEvent(self, event):
-        if (self.address <> None) and (self.transport <> None) and (event.fromplayer == Game.myplayer):
+        if (self.address != None) and (self.transport != None) and (event.fromplayer == Game.myplayer):
             log ("send " + str(event.type))
             self.mysequence = self.mysequence + 1
-            s = StringIO.StringIO()
-            cPickle.Pickler(s).dump(TFTMessage(self.mysequence, event))
+            s = io.BytesIO()
+            pickle.Pickler(s).dump(TFTMessage(self.mysequence, event))
             self.transport.write(s.getvalue(), self.address)
             
     def connectTransport(self, event):
@@ -439,12 +441,12 @@ class TFTGraphicsMgr(GameGraphicsMgr):
 class Floor(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = pygame.Surface((SCREENRECT.width - (SCREENRECT.width / 8), SCREENRECT.height / 96))
+        self.image = pygame.Surface((SCREENRECT.width - (SCREENRECT.width // 8), SCREENRECT.height // 96))
         self.image.fill(pygame.color.Color("white"))
         self.rect = self.image.get_rect()
         self.reloading = 0
-        self.rect.centerx = SCREENRECT.centerx
-        self.rect.bottom = SCREENRECT.bottom * 0.875
+        self.rect.centerx = int(SCREENRECT.centerx)
+        self.rect.bottom = int(SCREENRECT.bottom * 0.875)
         self.origtop = self.rect.top
         self.facing = -1
 
@@ -455,12 +457,12 @@ class Floor(pygame.sprite.Sprite):
 class Net(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = pygame.Surface((SCREENRECT.width / 128, SCREENRECT.height / 12))
+        self.image = pygame.Surface((SCREENRECT.width // 128, SCREENRECT.height // 12))
         self.image.fill(pygame.color.Color("white"))
         self.rect = self.image.get_rect()
         self.reloading = 0
-        self.rect.centerx = SCREENRECT.centerx
-        self.rect.bottom = SCREENRECT.bottom * 0.875
+        self.rect.centerx = int(SCREENRECT.centerx)
+        self.rect.bottom = int(SCREENRECT.bottom * 0.875)
         self.origtop = self.rect.top
         self.facing = -1
 
@@ -470,7 +472,7 @@ class Net(pygame.sprite.Sprite):
 class Ball(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = pygame.Surface((SCREENRECT.width / 128, SCREENRECT.height / 96))
+        self.image = pygame.Surface((SCREENRECT.width // 128, SCREENRECT.height // 96))
         self.image.fill(pygame.color.Color("white"))
         self.rect = self.image.get_rect()
         self.reloading = 0
@@ -492,7 +494,7 @@ class Ball(pygame.sprite.Sprite):
 class ShotLine(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = pygame.Surface((SCREENRECT.width / 32, SCREENRECT.height / 24), SRCALPHA)
+        self.image = pygame.Surface((SCREENRECT.width // 32, SCREENRECT.height // 24), SRCALPHA)
         self.image.set_colorkey(pygame.color.Color("purple"))
         self.rect = self.image.get_rect()
         self.updateAngle()       
@@ -533,14 +535,14 @@ class PhysicsMgr:
         self.lastSeq = -1
         
     def switchEngines(self, ev):
-        if Game.ball.currentPlayer() <> Game.myplayer:
+        if Game.ball.currentPlayer() != Game.myplayer:
             self.current = self.netPhysics
             self.current.switchStarted = True
         else:
             self.current = self.gamePhysics
     
     def switchToGame(self, ev):
-        if ev.fromplayer <> Game.myplayer:
+        if ev.fromplayer != Game.myplayer:
             if ev.seq > self.lastSeq:
                 self.lastSeq = ev.seq
                 self.gamePhysics.resync(ev)
@@ -598,8 +600,8 @@ class PhysicsEngine:
             #@-node:jpenner.20050310185414:<< Switch players >>
             #@nl
             
-            Game.ball.rect.centerx += self.xvel
-            Game.ball.rect.centery += self.yvel
+            Game.ball.rect.centerx += int(self.xvel)
+            Game.ball.rect.centery += int(self.yvel)
             
         Game.evMgr.postEvent(BallPosEvent(Game.ball.rect.centerx, Game.ball.rect.centery))
         Game.switchEv = PlayerSwitchEvent(self.xvel, self.yvel, Game.ball.rect.centerx, Game.ball.rect.centery, self.stopped)
@@ -628,7 +630,7 @@ class NetworkPhysicsEngine:
         self.switchStarted = False
         
     def updatePos(self, ev):
-        if (ev.fromplayer <> Game.myplayer):
+        if (ev.fromplayer != Game.myplayer):
             self.switchStarted = False
             Game.ball.rect.centerx = ev.x
             Game.ball.rect.centery = ev.y
@@ -659,7 +661,7 @@ class SoundEngine:
               EV_HELLO: 'connect.wav' }
 
         self.sound = {}
-        for evtype, filename in f.iteritems():
+        for evtype, filename in f.items():
             try:
                 self.sound[evtype] = pygame.mixer.Sound('data/' + filename)
                 Game.evMgr.registerHandler(evtype, self.noise)
@@ -712,8 +714,9 @@ class InputManager:
             Game.evMgr.postEvent( ClickEvent(velocityFromAngle(angle), Game.myplayer) )
             
         if event.type == KEYUP:
-            Game.evMgr.postEvent( ServeEvent() )
-            
+            Game.evMgr.postEvent( ServeEvent(event.key) )
+            if event.key == 27:
+                Game.gameMgr.changeState(Game.gameMgr.STATE_MENU)
 #@nonl
 #@-node:jpenner.20050310200258:Input
 #@+node:jpenner.20050305122430:Game Loop
@@ -724,17 +727,17 @@ class GameState:
     def __init__(self, manager, onenter = None, onexit = None):
         def doNothing(): pass
 
-        if manager <> None:
+        if manager != None:
             self.tick = manager.tick
         else:
             self.tick = doNothing
 
-        if onenter <> None:
+        if onenter != None:
             self.enter = onenter
         else:
             self.enter = doNothing
 
-        if onexit <> None:
+        if onexit != None:
             self.exit = onexit
         else:
             self.exit = doNothing
@@ -825,7 +828,7 @@ class GameMgr (StateMachine):
             self.changeState(self.STATE_FAILURE)
 
     def networkExit(self):
-        if ((self.newstate == self.STATE_MENU) or (self.newstate == self.STATE_FAILURE)) and (Game.port <> None):  # cancelled
+        if ((self.newstate == self.STATE_MENU) or (self.newstate == self.STATE_FAILURE)) and (Game.port != None):  # cancelled
             Game.port.stopListening()
 #@-node:jpenner.20050606072251.1:Game Manager
 #@-others
