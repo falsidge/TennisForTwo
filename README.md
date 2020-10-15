@@ -12,7 +12,7 @@ python TennisForTwo.py
 ```
 
 # Build
-``
+```
 pyinstaller TennisForTwo.spec
 ```
 or
