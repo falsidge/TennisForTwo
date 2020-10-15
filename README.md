@@ -10,3 +10,13 @@ cd TennisForTwo
 pip install pygame twisted
 python TennisForTwo.py
 ```
+
+# Build
+``
+pyinstaller TennisForTwo.spec
+```
+or
+```
+pyinstaller TennisForTwo.py --add-data data;data --add-data tennis.bmp;. --add-data freesansbold.ttf;. --exclude-module numpy --exclude-module scipy --exclude-module lib2to3
+``` 
+include --onefile for one exe file

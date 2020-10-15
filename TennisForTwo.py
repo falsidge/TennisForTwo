@@ -851,7 +851,6 @@ def main():
     Game.sound = SoundEngine()   
     Game.rules = RuleManager()
     Game.gameMgr = GameMgr()
-    
     task.LoopingCall(Game.gameMgr.tick).start(0.03)
     reactor.run()
     

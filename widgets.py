@@ -317,7 +317,7 @@ class ButtonClass:
         self.shadow.bottom += 5
         
         # font
-        self.font = pygame.font.Font( None, fontsize )
+        self.font = pygame.font.Font( "freesansbold.ttf", fontsize )
         
         # update button text
         self.settext( text )
@@ -463,7 +463,7 @@ class PageClass:
         self.manager = manager
         self.rect = Rect( rect )
         self.background = background
-        self.font = pygame.font.Font( None, fontsize )
+        self.font = pygame.font.Font( "freesansbold.ttf", fontsize )
         self.maxlines = maxlines
         self.foreground = foreground
         
@@ -722,7 +722,7 @@ class EditClass:
         self.manager = manager
         self.action = action
         self.rect = Rect(rect)
-        self.font = pygame.font.Font( None, fontsize )
+        self.font = pygame.font.Font( "freesansbold.ttf", fontsize )
         self.maxchars = maxchars
         self.foreground = foreground
         self.background = background
@@ -933,7 +933,7 @@ class TextClass:
         self.rect = Rect(rect)
         self.foreground = foreground
         self.background = background
-        self.font = pygame.font.Font( None, fontsize )
+        self.font = pygame.font.Font( "freesansbold.ttf", fontsize )
         self.settext( text )
     #@-node:jpenner.20050604112932.43:__init__
     #@+node:jpenner.20050604112932.44:settext
@@ -998,7 +998,7 @@ class MultiLineTextClass:
         self.rect = Rect(rect)
         self.foreground = foreground
         self.background = background
-        self.font = pygame.font.Font( None, fontsize )
+        self.font = pygame.font.Font( "freesansbold.ttf", fontsize )
         self.settext( text )
     #@-node:jpenner.20050604112932.49:__init__
     #@+node:jpenner.20050604112932.50:settext
