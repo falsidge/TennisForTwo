@@ -60,10 +60,10 @@ def velocityFromAngle(angle):
 def getMyIP():
     try:
         f = urllib.request.urlopen('http://checkip.dyndns.org')
-        s = f.read()
+        s = f.read().decode()
         log("checkip: " + s)
-        m = re.search('Current IP Address: ([\d]*\.[\d]*\.[\d]*\.[\d]*)', s)
-        outsideip = m.group(0)
+
+        outsideip = s[len("Current IP Address: ")+s.find("Current IP Address: "):s.find("</body>")]
         log("outside ip: " + outsideip)
     except:
         outsideip = None
@@ -82,7 +82,7 @@ def getMyIP():
         else:
              ip = outsideip
              if (insideip != None) and (insideip != outsideip):
-                 ip = ip + " (Firewalled?)"
+                 ip = ip + " (Firewalled?) " + insideip
     return ip
 #@-node:jpenner.20050605110605:IP address
 #@-others
@@ -853,7 +853,6 @@ def main():
     Game.gameMgr = GameMgr()
     
     task.LoopingCall(Game.gameMgr.tick).start(0.03)
-
     reactor.run()
     
     #cleanup
